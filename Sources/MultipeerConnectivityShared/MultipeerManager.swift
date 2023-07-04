@@ -93,11 +93,11 @@ public class MultipeerManager: NSObject, MCSessionDelegate, MCNearbyServiceBrows
     // MARK: - MCNearbyServiceBrowserDelegate
 
     public func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String: String]?) {
-        browser.invitePeer(peerID, to: session!, withContext: nil, timeout: 10)
+        guard let session = session else { return }
+        browser.invitePeer(peerID, to: session, withContext: nil, timeout: 10)
     }
 
     public func browser(_ browser: MCNearbyServiceBrowser, lostPeer peerID: MCPeerID) {
-        // Handle lost peer if needed
     }
 
     public func session(_ session: MCSession, didReceive stream: InputStream, withName streamName: String, fromPeer peerID: MCPeerID) {
