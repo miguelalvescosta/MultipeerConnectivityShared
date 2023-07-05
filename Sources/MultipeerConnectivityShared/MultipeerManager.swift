@@ -28,6 +28,10 @@ public class MultipeerManager: NSObject, MCSessionDelegate, MCNearbyServiceBrows
         self.advertiser = advertiser
         self.browser = browser
         super.init()
+        session.delegate = self
+        advertiser.delegate = self
+        browser.delegate = self
+
     }
 
     public func startAdvertising() {
