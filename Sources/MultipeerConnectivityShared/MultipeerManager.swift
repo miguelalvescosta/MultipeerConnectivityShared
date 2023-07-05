@@ -18,39 +18,52 @@ public class MultipeerManager: NSObject, MCSessionDelegate, MCNearbyServiceBrows
 
     private let serviceType = "example-service"
     private let myPeerID = MCPeerID(displayName: UIDevice.current.name)
-    private let session: MCSession
-    private let advertiser: MCNearbyServiceAdvertiser
-    private let browser: MCNearbyServiceBrowser
+    private var session: MCSession?
+    private var advertiser: MCNearbyServiceAdvertiser?
+    private var browser: MCNearbyServiceBrowser?
     public weak var delegate: MultipeerManagerDelegate?
 
-    public init(session: MCSession, advertiser: MCNearbyServiceAdvertiser, browser: MCNearbyServiceBrowser) {
-        self.session = session
-        self.advertiser = advertiser
-        self.browser = browser
+    public override init() {
         super.init()
-        self.session.delegate = self
-        self.advertiser.delegate = self
-        self.browser.delegate = self
+        session = MCSession(peer: myPeerID, securityIdentity: nil, encryptionPreference: .required)
+        advertiser = MCNearbyServiceAdvertiser(peer: myPeerID, discoveryInfo: nil, serviceType: serviceType)
+        browser = MCNearbyServiceBrowser(peer: myPeerID, serviceType: serviceType)
+        assignDelegates()
 
+    }
+
+    public init(session: MCSession, advertiser: MCNearbyServiceAdvertiser, browser: MCNearbyServiceBrowser) {
+           self.session = session
+           self.advertiser = advertiser
+           self.browser = browser
+           super.init()
+           assignDelegates()
+       }
+
+    private func assignDelegates() {
+        session?.delegate = self
+        advertiser?.delegate = self
+        browser?.delegate = self
     }
 
     public func startAdvertising() {
-        advertiser.startAdvertisingPeer()
+        advertiser?.startAdvertisingPeer()
     }
 
     public func stopAdvertising() {
-        advertiser.stopAdvertisingPeer()
+        advertiser?.stopAdvertisingPeer()
     }
 
     public func startBrowsing() {
-        browser.startBrowsingForPeers()
+        browser?.startBrowsingForPeers()
     }
 
     public func stopBrowsing() {
-        browser.stopBrowsingForPeers()
+        browser?.stopBrowsingForPeers()
     }
 
     public func send(person: Person) {
+        guard let session = session else { return }
         guard !session.connectedPeers.isEmpty else { return }
 
         do {
@@ -93,6 +106,7 @@ public class MultipeerManager: NSObject, MCSessionDelegate, MCNearbyServiceBrows
     // MARK: - MCNearbyServiceBrowserDelegate
 
     public func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String: String]?) {
+        guard let session = session else { return }
         browser.invitePeer(peerID, to: session, withContext: nil, timeout: 10)
     }
 
