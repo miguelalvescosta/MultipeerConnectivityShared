@@ -1,6 +1,6 @@
 //
 //  File.swift
-//  
+//
 //
 //  Created by Miguel Costa on 04.07.23.
 //
@@ -18,39 +18,35 @@ public class MultipeerManager: NSObject, MCSessionDelegate, MCNearbyServiceBrows
 
     private let serviceType = "example-service"
     private let myPeerID = MCPeerID(displayName: UIDevice.current.name)
-    private var session: MCSession?
-    private var advertiser: MCNearbyServiceAdvertiser?
-    private var browser: MCNearbyServiceBrowser?
+    private let session: MCSession
+    private let advertiser: MCNearbyServiceAdvertiser
+    private let browser: MCNearbyServiceBrowser
     public weak var delegate: MultipeerManagerDelegate?
 
-    public override init() {
+    public init(session: MCSession, advertiser: MCNearbyServiceAdvertiser, browser: MCNearbyServiceBrowser) {
+        self.session = session
+        self.advertiser = advertiser
+        self.browser = browser
         super.init()
-        session = MCSession(peer: myPeerID, securityIdentity: nil, encryptionPreference: .required)
-        session?.delegate = self
-        advertiser = MCNearbyServiceAdvertiser(peer: myPeerID, discoveryInfo: nil, serviceType: serviceType)
-        advertiser?.delegate = self
-        browser = MCNearbyServiceBrowser(peer: myPeerID, serviceType: serviceType)
-        browser?.delegate = self
     }
 
     public func startAdvertising() {
-        advertiser?.startAdvertisingPeer()
+        advertiser.startAdvertisingPeer()
     }
 
     public func stopAdvertising() {
-        advertiser?.stopAdvertisingPeer()
+        advertiser.stopAdvertisingPeer()
     }
 
     public func startBrowsing() {
-        browser?.startBrowsingForPeers()
+        browser.startBrowsingForPeers()
     }
 
     public func stopBrowsing() {
-        browser?.stopBrowsingForPeers()
+        browser.stopBrowsingForPeers()
     }
 
     public func send(person: Person) {
-        guard let session = session else { return }
         guard !session.connectedPeers.isEmpty else { return }
 
         do {
@@ -82,7 +78,7 @@ public class MultipeerManager: NSObject, MCSessionDelegate, MCNearbyServiceBrows
             print("Error receiving data: \(error.localizedDescription)")
         }
     }
-    
+
     // MARK: - MCNearbyServiceAdvertiserDelegate
 
     public func advertiser(_ advertiser: MCNearbyServiceAdvertiser, didReceiveInvitationFromPeer peerID: MCPeerID,
@@ -93,7 +89,6 @@ public class MultipeerManager: NSObject, MCSessionDelegate, MCNearbyServiceBrows
     // MARK: - MCNearbyServiceBrowserDelegate
 
     public func browser(_ browser: MCNearbyServiceBrowser, foundPeer peerID: MCPeerID, withDiscoveryInfo info: [String: String]?) {
-        guard let session = session else { return }
         browser.invitePeer(peerID, to: session, withContext: nil, timeout: 10)
     }
 

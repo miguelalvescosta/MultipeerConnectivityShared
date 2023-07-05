@@ -7,9 +7,7 @@
 
 import Foundation
 
-import Foundation
-
-public struct Person: Identifiable, Codable {
+public struct Person: Identifiable, Codable, Equatable {
     public var id = UUID()
     public let name: String
     public let age: Int
