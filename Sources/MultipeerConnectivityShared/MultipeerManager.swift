@@ -8,7 +8,6 @@
 import Foundation
 import MultipeerConnectivity
 
-
 public protocol MultipeerManagerDelegate: AnyObject {
     func didReceive(person: Person)
     func didChangeConnectionStatus(connected: Bool)
@@ -16,29 +15,19 @@ public protocol MultipeerManagerDelegate: AnyObject {
 
 public class MultipeerManager: NSObject, MCSessionDelegate, MCNearbyServiceBrowserDelegate, MCNearbyServiceAdvertiserDelegate {
 
-    private let serviceType = "example-service"
-    private let myPeerID = MCPeerID(displayName: UIDevice.current.name)
     private var session: MCSession?
     private var advertiser: MCNearbyServiceAdvertiser?
     private var browser: MCNearbyServiceBrowser?
     public weak var delegate: MultipeerManagerDelegate?
 
-    public override init() {
+    public init(config: MultipeerManagerConfiguration) {
         super.init()
-        session = MCSession(peer: myPeerID, securityIdentity: nil, encryptionPreference: .required)
-        advertiser = MCNearbyServiceAdvertiser(peer: myPeerID, discoveryInfo: nil, serviceType: serviceType)
-        browser = MCNearbyServiceBrowser(peer: myPeerID, serviceType: serviceType)
+        self.session = config.session
+        self.advertiser = config.advertiser
+        self.browser = config.browser
+
         assignDelegates()
-
     }
-
-    public init(session: MCSession, advertiser: MCNearbyServiceAdvertiser, browser: MCNearbyServiceBrowser) {
-           self.session = session
-           self.advertiser = advertiser
-           self.browser = browser
-           super.init()
-           assignDelegates()
-       }
 
     private func assignDelegates() {
         session?.delegate = self

@@ -10,5 +10,18 @@
 			<integer>0</integer>
 		</dict>
 	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>MultipeerConnectivityShared</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+		<key>MultipeerConnectivitySharedTests</key>
+		<dict>
+			<key>primary</key>
+			<true/>
+		</dict>
+	</dict>
 </dict>
 </plist>

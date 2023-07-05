@@ -2,72 +2,68 @@ import XCTest
 import MultipeerConnectivity
 @testable import MultipeerConnectivityShared
 
-    class MultipeerConnectivitySharedTests: XCTestCase {
-        var sessionMock: MCSessionMock!
-           var advertiserMock: MCNearbyServiceAdvertiserMock!
-           var browserMock: MCNearbyServiceBrowserMock!
-           var multipeerManager: MultipeerManager!
-           var delegateMock: MultipeerManagerDelegateMock!
+class MultipeerConnectivitySharedTests: XCTestCase {
+    var sessionMock: MCSessionMock!
+    var advertiserMock: MCNearbyServiceAdvertiserMock!
+    var browserMock: MCNearbyServiceBrowserMock!
+    var multipeerManager: MultipeerManager!
+    var delegateMock: MultipeerManagerDelegateMock!
+    var multipeerManagerMockConfiguration: MultipeerManagerConfiguration!
 
-           override func setUp() {
-               super.setUp()
-               sessionMock = MCSessionMock(peer: MCPeerID(displayName: UIDevice.current.name))
-               advertiserMock = MCNearbyServiceAdvertiserMock(peer: MCPeerID(displayName: UIDevice.current.name), discoveryInfo: nil, serviceType: "example-service")
-               browserMock = MCNearbyServiceBrowserMock(peer: MCPeerID(displayName: UIDevice.current.name), serviceType: "example-service")
-               delegateMock = MultipeerManagerDelegateMock()
-               multipeerManager = MultipeerManager(session: sessionMock, advertiser: advertiserMock, browser: browserMock)
-               multipeerManager.delegate = delegateMock
-           }
-
-        override func tearDown() {
-            sessionMock = nil
-            advertiserMock = nil
-            browserMock = nil
-            multipeerManager = nil
-            super.tearDown()
-        }
-
-        func testStartAdvertising() {
-            multipeerManager.startAdvertising()
-            XCTAssertTrue(advertiserMock.startAdvertisingPeerCalled)
-        }
-
-        func testStopAdvertising() {
-            multipeerManager.stopAdvertising()
-            XCTAssertTrue(advertiserMock.stopAdvertisingPeerCalled)
-        }
-
-        func testDidReceivePerson() {
-            let person = Person(name: "Jane Smith", age: 25)
-            let personData = try! JSONEncoder().encode(person)
-            let sessionMock = MCSessionMock(peer: MCPeerID(displayName: "Receiver"))
-            let advertiserMock = MCNearbyServiceAdvertiserMock(peer: MCPeerID(displayName: UIDevice.current.name), discoveryInfo: nil, serviceType: "example-service")
-            let browserMock = MCNearbyServiceBrowserMock(peer: MCPeerID(displayName: UIDevice.current.name), serviceType: "example-service")
-            let multipeerManager = MultipeerManager(session: sessionMock, advertiser: advertiserMock, browser: browserMock)
-            let delegateMock = MultipeerManagerDelegateMock()
-            multipeerManager.delegate = delegateMock
-
-            multipeerManager.session(sessionMock, didReceive: personData, fromPeer: MCPeerID(displayName: "Sender"))
-
-            XCTAssertTrue(delegateMock.didReceivePersonCalled)
-            XCTAssertEqual(delegateMock.receivedPerson, person)
-        }
-
-        func testDidChangeConnectionStatusConnected() {
-            let sessionMock = MCSessionMock(peer: MCPeerID(displayName: "Peer"))
-            let advertiserMock = MCNearbyServiceAdvertiserMock(peer: MCPeerID(displayName: UIDevice.current.name), discoveryInfo: nil, serviceType: "example-service")
-            let browserMock = MCNearbyServiceBrowserMock(peer: MCPeerID(displayName: UIDevice.current.name), serviceType: "example-service")
-            let multipeerManager = MultipeerManager(session: sessionMock, advertiser: advertiserMock, browser: browserMock)
-            let delegateMock = MultipeerManagerDelegateMock()
-            multipeerManager.delegate = delegateMock
-
-            multipeerManager.session(sessionMock, peer: MCPeerID(displayName: "Peer"), didChange: .connected)
-
-            XCTAssertTrue(delegateMock.didChangeConnectionStatusCalled)
-            XCTAssertTrue(delegateMock.connectedStatus ?? false)
-        }
-
+    override func setUp() {
+        super.setUp()
+        sessionMock = MCSessionMock(peer: MCPeerID(displayName: UIDevice.current.name))
+        advertiserMock = MCNearbyServiceAdvertiserMock(peer: MCPeerID(displayName: UIDevice.current.name), discoveryInfo: nil, serviceType: "example-service")
+        browserMock = MCNearbyServiceBrowserMock(peer: MCPeerID(displayName: UIDevice.current.name), serviceType: "example-service")
+        delegateMock = MultipeerManagerDelegateMock()
+        multipeerManagerMockConfiguration = MultipeerManagerConfiguration(session: sessionMock, advertiser: advertiserMock, browser: browserMock)
+        multipeerManager = MultipeerManager(config: multipeerManagerMockConfiguration)
+        multipeerManager.delegate = delegateMock
     }
+
+    override func tearDown() {
+        sessionMock = nil
+        advertiserMock = nil
+        browserMock = nil
+        multipeerManager = nil
+        super.tearDown()
+    }
+
+    func testStartAdvertising() {
+        multipeerManager.startAdvertising()
+        XCTAssertTrue(advertiserMock.startAdvertisingPeerCalled)
+    }
+
+    func testStopAdvertising() {
+        multipeerManager.stopAdvertising()
+        XCTAssertTrue(advertiserMock.stopAdvertisingPeerCalled)
+    }
+
+    func testDidReceivePerson() {
+        let person = Person(name: "Jane Smith", age: 25)
+        let personData = try! JSONEncoder().encode(person)
+        let multipeerManager = MultipeerManager(config: multipeerManagerMockConfiguration)
+        let delegateMock = MultipeerManagerDelegateMock()
+        multipeerManager.delegate = delegateMock
+
+        multipeerManager.session(sessionMock, didReceive: personData, fromPeer: MCPeerID(displayName: "Sender"))
+
+        XCTAssertTrue(delegateMock.didReceivePersonCalled)
+        XCTAssertEqual(delegateMock.receivedPerson, person)
+    }
+
+    func testDidChangeConnectionStatusConnected() {
+        let multipeerManager = MultipeerManager(config: multipeerManagerMockConfiguration)
+        let delegateMock = MultipeerManagerDelegateMock()
+        multipeerManager.delegate = delegateMock
+
+        multipeerManager.session(sessionMock, peer: MCPeerID(displayName: "Peer"), didChange: .connected)
+
+        XCTAssertTrue(delegateMock.didChangeConnectionStatusCalled)
+        XCTAssertTrue(delegateMock.connectedStatus ?? false)
+    }
+
+}
 
 
 class MCSessionMock: MCSession {
